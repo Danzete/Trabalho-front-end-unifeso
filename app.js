@@ -1,4 +1,3 @@
-
 const { useState, useEffect } = React;
 const html = htm.bind(React.createElement);
 
@@ -235,6 +234,168 @@ function FormVenda({ produtos, clientes, onSalvar }) {
   `;
 }
 
+function AbaRelatorios({ produtos, onErro }) {
+  const [selecionados, setSelecionados] = useState([]);
+  const [vendasFiltradas, setVendasFiltradas] = useState([]);
+  const [buscando, setBuscando] = useState(false);
+
+  function alternarProduto(id) {
+    setSelecionados(atual =>
+      atual.includes(id)
+        ? atual.filter(item => item !== id)
+        : [...atual, id]
+    );
+  }
+
+  function selecionarTodos() {
+    setSelecionados(produtos.map(p => Number(p.id)));
+  }
+
+  function limparSelecao() {
+    setSelecionados([]);
+    setVendasFiltradas([]);
+  }
+
+  useEffect(() => {
+    if (!selecionados.length) {
+      setVendasFiltradas([]);
+      return;
+    }
+
+    let cancelado = false;
+
+    async function puxarVendas() {
+      setBuscando(true);
+
+      try {
+        const todas = await api('/vendas?busca=');
+        if (cancelado) return;
+
+        const nomesSelecionados = produtos
+          .filter(p => selecionados.includes(Number(p.id)))
+          .map(p => p.nome);
+
+        const filtradas = todas.filter(v => {
+          if (v.produtoId !== undefined && v.produtoId !== null) {
+            return selecionados.includes(Number(v.produtoId));
+          }
+          return nomesSelecionados.includes(v.produtoNome);
+        });
+
+        setVendasFiltradas(filtradas);
+      } catch (e) {
+        if (!cancelado) onErro(e.message);
+      } finally {
+        if (!cancelado) setBuscando(false);
+      }
+    }
+
+    puxarVendas();
+
+    return () => {
+      cancelado = true;
+    };
+  }, [selecionados, produtos]);
+
+  const totalQuantidade = vendasFiltradas.reduce(
+    (soma, v) => soma + Number(v.qtd || 0),
+    0
+  );
+
+  const totalReais = vendasFiltradas.reduce(
+    (soma, v) => soma + Number(v.total || 0),
+    0
+  );
+
+  return html`
+    <div className="form">
+      <p className="suave">
+        Escolha um, mais de um ou todos os produtos para puxar as vendas:
+      </p>
+
+      <div className="abas">
+        <button
+          type="button"
+          className="botao-simples"
+          onClick=${selecionarTodos}
+          disabled=${!produtos.length}
+        >
+          Todos os produtos
+        </button>
+
+        <button
+          type="button"
+          className="botao-simples"
+          onClick=${limparSelecao}
+          disabled=${!selecionados.length}
+        >
+          Limpar seleção
+        </button>
+      </div>
+
+      ${!produtos.length
+        ? html`<p className="vazio">Nenhum produto cadastrado ainda.</p>`
+        : html`
+          <ul className="lista">
+            ${produtos.map(p => {
+              const idNum = Number(p.id);
+              const marcado = selecionados.includes(idNum);
+
+              return html`
+                <li key=${p.id}>
+                  <label className="info">
+                    <input
+                      type="checkbox"
+                      checked=${marcado}
+                      onChange=${() => alternarProduto(idNum)}
+                    />
+                    <span> </span>
+                    <strong>${p.nome}</strong>
+                    <span className="suave"> · ${dinheiro(p.preco)}</span>
+                  </label>
+                </li>
+              `;
+            })}
+          </ul>
+        `}
+    </div>
+
+    ${selecionados.length > 0 && html`
+      <div className="resumo">
+        <div className="cartao">
+          <span className="suave">Produtos vendidos</span>
+          <strong>${totalQuantidade}</strong>
+        </div>
+
+        <div className="cartao">
+          <span className="suave">Total em Reais</span>
+          <strong>${dinheiro(totalReais)}</strong>
+        </div>
+      </div>
+
+      ${buscando
+        ? html`<p className="vazio">Buscando vendas...</p>`
+        : html`
+          <${Lista}
+            itens=${vendasFiltradas}
+            mensagemVazia="Nenhuma venda encontrada para o(s) produto(s) selecionado(s)."
+          >
+            ${v => html`
+              <div className="info">
+                <p>${v.qtd}× ${v.produtoNome}</p>
+                <p className="suave">
+                  ${v.clienteNome} · ${diaMes(v.data)}
+                </p>
+              </div>
+
+              <strong>${dinheiro(v.total)}</strong>
+            `}
+          <//>
+        `}
+    `}
+  `;
+}
+
 function App() {
   const [produtos, setProdutos] = useState([]);
   const [clientes, setClientes] = useState([]);
@@ -333,13 +494,18 @@ function App() {
       </div>
 
       <div className="abas">
-        ${['vendas', 'produtos', 'clientes'].map(nome => html`
+        ${[
+          { id: 'vendas', rotulo: 'Vendas' },
+          { id: 'produtos', rotulo: 'Produtos' },
+          { id: 'clientes', rotulo: 'Clientes' },
+          { id: 'relatorios', rotulo: 'Relatórios' }
+        ].map(item => html`
           <button
-            key=${nome}
-            className=${'aba' + (aba === nome ? ' ativa' : '')}
-            onClick=${() => setAba(nome)}
+            key=${item.id}
+            className=${'aba' + (aba === item.id ? ' ativa' : '')}
+            onClick=${() => setAba(item.id)}
           >
-            ${nome[0].toUpperCase() + nome.slice(1)}
+            ${item.rotulo}
           </button>
         `)}
       </div>
@@ -453,6 +619,13 @@ function App() {
                 />
               `}
             <//>
+          `}
+
+          ${aba === 'relatorios' && html`
+            <${AbaRelatorios}
+              produtos=${produtos}
+              onErro=${msg => setErroGeral(msg)}
+            />
           `}
         `}
     </div>
