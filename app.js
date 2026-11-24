@@ -135,10 +135,20 @@ function App() {
   const [clientes, setClientes] = useLocalStorage('caderno:clientes', DADOS_INICIAIS.clientes);
   const [vendas, setVendas] = useLocalStorage('caderno:vendas', DADOS_INICIAIS.vendas);
   const [aba, setAba] = useState('vendas');
+  const [busca, setBusca] = useState('');
 
   const mes = new Date().toISOString().slice(0, 7);
   const vendasDoMes = vendas.filter(v => v.data.startsWith(mes));
   const totalDoMes = vendasDoMes.reduce((soma, v) => soma + v.total, 0);
+
+  const vendasFiltradas = vendas.filter(v => {
+    const termo = busca.trim().toLowerCase();
+    if (!termo) return true;
+    return (
+      v.clienteNome.toLowerCase().includes(termo) ||
+      v.produtoNome.toLowerCase().includes(termo)
+    );
+  });
 
   // Devolve a mensagem de erro, ou nada se a venda foi registrada.
   function registrarVenda({ clienteId, produtoId, qtd }) {
@@ -181,7 +191,14 @@ function App() {
 
       ${aba === 'vendas' && html`
         <${FormVenda} produtos=${produtos} clientes=${clientes} onSalvar=${registrarVenda} />
-        <${Lista} itens=${vendas} mensagemVazia="Nenhuma venda ainda. Quando você registrar a primeira, ela aparece aqui.">
+        <div className="form">
+          <input
+            placeholder="Buscar venda por cliente ou produto..."
+            value=${busca}
+            onInput=${e => setBusca(e.target.value)}
+          />
+        </div>
+        <${Lista} itens=${vendasFiltradas} mensagemVazia=${busca.trim() ? 'Nenhuma venda encontrada para esse filtro.' : 'Nenhuma venda ainda. Quando você registrar a primeira, ela aparece aqui.'}>
           ${v => html`
             <div className="info">
               <p>${v.qtd}× ${v.produtoNome}</p>
