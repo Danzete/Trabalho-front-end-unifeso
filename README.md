@@ -1,5 +1,14 @@
 # Caderno de Vendas — UNIFESO
 
+Grupo:
+Ana Flávia da Silva Carvalho
+Daniel Lopes Tayt-Sohn Pisno
+Felipe dos Santos Almeida
+Felipe Gomes da Costa
+
+
+
+
 Sistema de gerenciamento de vendas desenvolvido como trabalho acadêmico de Front-End para a UNIFESO.
 
 O projeto permite cadastrar produtos e clientes, registrar vendas, acompanhar o estoque e visualizar um resumo das vendas realizadas.
