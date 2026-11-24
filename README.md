@@ -1,36 +1,145 @@
-# Caderno de Vendas , trabalho frontend unifeso 
+# Caderno de Vendas — UNIFESO
 
-Spring Boot + H2 em modo arquivo. O frontend é servido pelo próprio Spring.
+Sistema de gerenciamento de vendas desenvolvido como trabalho acadêmico de Front-End para a UNIFESO.
 
+O projeto permite cadastrar produtos e clientes, registrar vendas, acompanhar o estoque e visualizar um resumo das vendas realizadas.
 
+## Tecnologias utilizadas
 
-## Como rodar
+### Front-End
+- HTML5
+- CSS3
+- JavaScript
+- React
 
-    mvn spring-boot:run
+### Back-End e persistência
+- Java 21
+- Spring Boot
+- Maven
+- H2 Database
 
-Abra http://localhost:8080. Na primeira vez, o banco é criado em `data/` com alguns exemplos.
+## Funcionalidades
+
+- **Cadastro de produtos:** nome, preço e quantidade em estoque.
+- **Cadastro de clientes:** nome e telefone.
+- **Registro de vendas:** associação entre clientes e produtos, com definição da quantidade.
+- **Controle de estoque:** baixa automática ao registrar uma venda e devolução ao excluir uma venda.
+- **Histórico de vendas:** visualização das vendas registradas.
+- **Busca:** pesquisa de vendas por nome do cliente ou produto.
+- **Resumo mensal:** exibição do valor total vendido e da quantidade de vendas no mês.
+- **Exclusão de registros:** remoção de produtos, clientes e vendas.
+
+## Estrutura do projeto
+
+```text
+Trabalho-front-end-unifeso/
+│
+├── back/
+│   ├── src/
+│   │   └── main/
+│   │       ├── java/
+│   │       │   └── br/com/caderno/
+│   │       │       ├── config/
+│   │       │       ├── controllers/
+│   │       │       ├── entidades/
+│   │       │       ├── repositories/
+│   │       │       ├── VendaService.java
+│   │       │       └── TratadorDeErros.java
+│   │       │
+│   │       └── resources/
+│   ├── pom.xml
+│   └── README.md
+│
+├── data/
+│   └── Banco de dados H2
+│
+├── app.js
+├── index.html
+├── styles.css
+└── README.md
+```
+
+## Como executar o projeto
+
+### 1. Pré-requisitos
+
+- Java JDK 21 ou superior compatível com o projeto.
+- Maven 3.9 ou superior.
+- Visual Studio Code.
+- Extensão Live Server para executar o Front-End.
+
+### 2. Executar o Back-End
+
+Abra o terminal na pasta principal do projeto e execute:
+
+```bash
+cd back
+mvn spring-boot:run
+```
+
+O Spring Boot será iniciado na porta 8080.
+
+### 3. Executar o Front-End
+
+Abra a pasta principal do projeto no Visual Studio Code.
+
+1. Abra o arquivo `index.html`.
+2. Clique em **Go Live**, pela extensão Live Server.
+3. O Front-End será aberto no navegador, normalmente em:
+
+```text
+http://127.0.0.1:5500
+```
+
+O Front-End se comunica com o Back-End através de requisições HTTP para:
+
+```text
+http://localhost:8080/api
+```
+
+Os dois servidores precisam permanecer ativos durante a utilização.
 
 ## Banco de dados
 
-Console do H2: http://localhost:8080/h2
-URL: `jdbc:h2:file:./data/caderno;AUTO_SERVER=TRUE` | usuário: `sa` | senha: vazia
+O projeto utiliza o H2 Database em modo arquivo, permitindo persistir os dados entre as execuções da aplicação.
 
-Para recomeçar do zero, pare o servidor e apague a pasta `data/`.
+**Console do H2:**
 
-## API
+http://localhost:8080/h2
 
-| Método | Rota | O que faz |
-| --- | --- | --- |
-| GET / POST | `/api/produtos` | lista / cadastra |
-| DELETE | `/api/produtos/{id}` | exclui |
-| GET / POST | `/api/clientes` | lista / cadastra |
-| DELETE | `/api/clientes/{id}` | exclui |
-| GET | `/api/vendas?busca=` | lista, com busca por cliente ou produto |
-| POST | `/api/vendas` | registra e baixa o estoque |
-| DELETE | `/api/vendas/{id}` | exclui e devolve o estoque |
-| GET | `/api/vendas/resumo` | total e número de vendas do mês |
+**Configuração de conexão:**
 
-## Estrutura
+```text
+JDBC URL: jdbc:h2:file:./data/caderno;AUTO_SERVER=TRUE
+Usuário: sa
+Senha: (vazia)
+```
 
-- `src/main/java/br/com/caderno`: entidades, repositórios, controllers, `VendaService` (regra do estoque) e `TratadorDeErros`
-- `src/main/resources/static`: `index.html`, `styles.css`, `app.js`
+Na primeira execução, o banco de dados é criado na pasta `data/`, com alguns registros de exemplo.
+
+Para reiniciar o banco de dados do zero, encerre o servidor e apague a pasta `data/`.
+
+## API — Endpoints
+
+| Método | Rota | Descrição |
+|---|---|---|
+| GET | `/api/produtos` | Lista os produtos |
+| POST | `/api/produtos` | Cadastra um produto |
+| DELETE | `/api/produtos/{id}` | Exclui um produto |
+| GET | `/api/clientes` | Lista os clientes |
+| POST | `/api/clientes` | Cadastra um cliente |
+| DELETE | `/api/clientes/{id}` | Exclui um cliente |
+| GET | `/api/vendas?busca=` | Lista e pesquisa vendas |
+| POST | `/api/vendas` | Registra uma venda e baixa o estoque |
+| DELETE | `/api/vendas/{id}` | Exclui uma venda e devolve o estoque |
+| GET | `/api/vendas/resumo` | Retorna o resumo mensal |
+
+## Objetivo acadêmico
+
+O objetivo do projeto é aplicar os conhecimentos de desenvolvimento Front-End na criação de uma interface funcional para gerenciamento de vendas, trabalhando conceitos de componentes, formulários, manipulação de dados, eventos, integração com API e experiência do usuário.
+
+O Back-End fornece os serviços necessários para o funcionamento da aplicação e a persistência das informações.
+
+---
+
+**Projeto acadêmico — UNIFESO**
