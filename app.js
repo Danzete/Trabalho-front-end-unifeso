@@ -308,12 +308,12 @@ function AbaRelatorios({ produtos, onErro }) {
   );
 
   return html`
-    <div className="form">
-      <p className="suave">
+    <div>
+      <p className="suave" style=${{ marginBottom: '.75rem' }}>
         Escolha um, mais de um ou todos os produtos para puxar as vendas:
       </p>
 
-      <div className="abas">
+      <div className="acoes-relatorio">
         <button
           type="button"
           className="botao-simples"
@@ -333,66 +333,105 @@ function AbaRelatorios({ produtos, onErro }) {
         </button>
       </div>
 
-      ${!produtos.length
-        ? html`<p className="vazio">Nenhum produto cadastrado ainda.</p>`
-        : html`
-          <ul className="lista">
-            ${produtos.map(p => {
-              const idNum = Number(p.id);
-              const marcado = selecionados.includes(idNum);
+      <div className="grade-relatorio">
+        ${!produtos.length
+          ? html`<p className="vazio">Nenhum produto cadastrado ainda.</p>`
+          : html`
+            <ul className="lista lista-produtos">
+              ${produtos.map(p => {
+                const idNum = Number(p.id);
+                const marcado = selecionados.includes(idNum);
 
-              return html`
-                <li key=${p.id}>
-                  <label className="info">
-                    <input
-                      type="checkbox"
-                      checked=${marcado}
-                      onChange=${() => alternarProduto(idNum)}
-                    />
-                    <span> </span>
-                    <strong>${p.nome}</strong>
-                    <span className="suave"> · ${dinheiro(p.preco)}</span>
-                  </label>
-                </li>
-              `;
-            })}
-          </ul>
-        `}
-    </div>
-
-    ${selecionados.length > 0 && html`
-      <div className="resumo">
-        <div className="cartao">
-          <span className="suave">Produtos vendidos</span>
-          <strong>${totalQuantidade}</strong>
-        </div>
-
-        <div className="cartao">
-          <span className="suave">Total em Reais</span>
-          <strong>${dinheiro(totalReais)}</strong>
-        </div>
+                return html`
+                  <li key=${p.id}>
+                    <label className="info">
+                      <input
+                        type="checkbox"
+                        checked=${marcado}
+                        onChange=${() => alternarProduto(idNum)}
+                      />
+                      <span> </span>
+                      <strong>${p.nome}</strong>
+                      <span className="suave"> · ${dinheiro(p.preco)}</span>
+                    </label>
+                  </li>
+                `;
+              })}
+            </ul>
+          `}
       </div>
 
-      ${buscando
-        ? html`<p className="vazio">Buscando vendas...</p>`
-        : html`
-          <${Lista}
-            itens=${vendasFiltradas}
-            mensagemVazia="Nenhuma venda encontrada para o(s) produto(s) selecionado(s)."
-          >
-            ${v => html`
-              <div className="info">
-                <p>${v.qtd}× ${v.produtoNome}</p>
-                <p className="suave">
-                  ${v.clienteNome} · ${diaMes(v.data)}
-                </p>
-              </div>
+      ${selecionados.length > 0 && html`
+        <div className="resumo">
+          <div className="cartao">
+            <span className="suave">Produtos vendidos</span>
+            <strong>${totalQuantidade}</strong>
+          </div>
 
-              <strong>${dinheiro(v.total)}</strong>
-            `}
-          <//>
-        `}
-    `}
+          <div className="cartao">
+            <span className="suave">Total em Reais</span>
+            <strong>${dinheiro(totalReais)}</strong>
+          </div>
+        </div>
+
+        ${buscando
+          ? html`<p className="vazio">Buscando vendas...</p>`
+          : html`
+            <${Lista}
+              itens=${vendasFiltradas}
+              mensagemVazia="Nenhuma venda encontrada para o(s) produto(s) selecionado(s)."
+            >
+              ${v => html`
+                <div className="info">
+                  <p>${v.qtd}× ${v.produtoNome}</p>
+                  <p className="suave">
+                    ${v.clienteNome} · ${diaMes(v.data)}
+                  </p>
+                </div>
+
+                <strong>${dinheiro(v.total)}</strong>
+              `}
+            <//>
+          `}
+      `}
+    </div>
+  `;
+}
+
+function ControlesAcessibilidade() {
+  const [tema, setTema] = useState('escuro');
+  const [contraste, setContraste] = useState(false);
+
+  useEffect(() => {
+    // Aplica o tema no HTML
+    document.documentElement.setAttribute('data-tema', tema);
+    
+    // Aplica ou remove a classe de alto contraste no HTML
+    if (contraste) {
+      document.documentElement.classList.add('alto-contraste');
+    } else {
+      document.documentElement.classList.remove('alto-contraste');
+    }
+  }, [tema, contraste]);
+
+  return html`
+    <div style=${{ display: 'flex', gap: '0.5rem', flexWrap: 'wrap' }}>
+      <button
+        className="tema"
+        onClick=${() => setTema(t => t === 'escuro' ? 'claro' : 'escuro')}
+        aria-label="Alternar tema claro/escuro"
+      >
+        ${tema === 'escuro' ? '☀️ Claro' : '🌙 Escuro'}
+      </button>
+      
+      <button
+        className=${'tema' + (contraste ? ' ativo' : '')}
+        onClick=${() => setContraste(c => !c)}
+        aria-label="Alternar alto contraste"
+      >
+        🔍 Alto Contraste
+      </button>
+    </div>
   `;
 }
 
@@ -471,11 +510,15 @@ function App() {
 
   return html`
     <div className="pagina">
-      <h1>Caderno de Vendas</h1>
-
-      <p className="suave">
-        Quem comprou, o que saiu e quanto ainda tem na prateleira.
-      </p>
+      <div className="topo">
+        <div>
+          <h1>Caderno de Vendas</h1>
+          <p className="suave">
+            Quem comprou, o que saiu e quanto ainda tem na prateleira.
+          </p>
+        </div>
+        <${ControlesAcessibilidade} />
+      </div>
 
       ${erroGeral && html`
         <p className="erro">${erroGeral}</p>
